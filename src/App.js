@@ -5,18 +5,25 @@ import Logo from "./components/Logo/Logo";
 import ImageLinkForm from "./components/ImageLinkForm/ImageLinkForm";
 import Rank from "./components/Rank/Rank";
 import FaceRecognition from "./components/FaceRecognition/FaceRecognition";
+import SignIn from "./components/SignIn/SignIn"
 import Clarifai from 'clarifai';
 
-const app = new Clarifai.App({apiKey: 'a7993bbfbe484c1387e972e6c3750bd4'});
+const app = new Clarifai.App({ apiKey: 'a7993bbfbe484c1387e972e6c3750bd4' });
 
 class App extends React.Component {
   constructor() {
     super();
     this.state = {
       input: "",
-      imageURL: "https://samples.clarifai.com/face-det.jpg", 
-      box: {}
+      imageURL: "https://samples.clarifai.com/face-det.jpg",
+      box: {},
+      route: "signin",
+      isSignedIn: true
     }
+  }
+
+  onRouteChange = (route) => {
+    this.setState({ route: route });
   }
 
   calculateFaceBox = (data) => {
@@ -34,34 +41,39 @@ class App extends React.Component {
   }
 
   setBoundingBox = (box) => {
-    this.setState({box: box});
+    this.setState({ box: box });
   }
 
   onInputChange = (event) => {
-    this.setState({input: event.target.value});
+    this.setState({ input: event.target.value });
   }
 
   onBtnSubmit = () => {
-    this.setState({imageURL: this.state.input});
+    this.setState({ imageURL: this.state.input });
     app.models.predict(Clarifai.FACE_DETECT_MODEL, this.state.input)
-        .then(response => {
-          this.setBoundingBox(this.calculateFaceBox(response));
-        })
-        .catch(err => {
-          console.log(err);
-        });
+      .then(response => {
+        this.setBoundingBox(this.calculateFaceBox(response));
+      })
+      .catch(err => {
+        console.log(err);
+      });
   }
   render() {
     return (
       <div className="App">
-        <Navigation />
-        <Logo />
-        <Rank />
-        <ImageLinkForm onInputChange={this.onInputChange} onBtnSubmit={this.onBtnSubmit} />
-        <FaceRecognition url={this.state.imageURL} box={this.state.box} />
+        <Navigation signedIn={this.state} />
+        {this.state.route === 'home' ?
+          <div>
+            <Logo />
+            <Rank />
+            <ImageLinkForm onInputChange={this.onInputChange} onBtnSubmit={this.onBtnSubmit} />
+            <FaceRecognition url={this.state.imageURL} box={this.state.box} />
+          </div>
+         : <SignIn onBtnSubmit={this.onRouteChange} /> 
+          }
       </div>
     );
-  } 
+  }
 }
 
 export default App;
