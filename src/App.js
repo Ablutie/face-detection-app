@@ -6,6 +6,7 @@ import ImageLinkForm from "./components/ImageLinkForm/ImageLinkForm";
 import Rank from "./components/Rank/Rank";
 import FaceRecognition from "./components/FaceRecognition/FaceRecognition";
 import SignIn from "./components/SignIn/SignIn"
+import Register from "./components/Register/Register"
 import Clarifai from 'clarifai';
 
 const app = new Clarifai.App({ apiKey: 'a7993bbfbe484c1387e972e6c3750bd4' });
@@ -17,13 +18,19 @@ class App extends React.Component {
       input: "",
       imageURL: "https://samples.clarifai.com/face-det.jpg",
       box: {},
-      route: "signin",
-      isSignedIn: true
+      route: "register",
+      isSignedIn: false
     }
   }
 
   onRouteChange = (route) => {
-    this.setState({ route: route });
+    this.setState({ route: route }, () => {
+      if (route === "home") {
+        this.setState({isSignedIn: true});
+      } else {
+        this.setState({isSignedIn: false});
+      }
+    });
   }
 
   calculateFaceBox = (data) => {
@@ -61,7 +68,7 @@ class App extends React.Component {
   render() {
     return (
       <div className="App">
-        <Navigation signedIn={this.state} />
+        <Navigation isSignedIn={this.state.isSignedIn} onClick={this.onRouteChange} />
         {this.state.route === 'home' ?
           <div>
             <Logo />
@@ -69,7 +76,9 @@ class App extends React.Component {
             <ImageLinkForm onInputChange={this.onInputChange} onBtnSubmit={this.onBtnSubmit} />
             <FaceRecognition url={this.state.imageURL} box={this.state.box} />
           </div>
-         : <SignIn onBtnSubmit={this.onRouteChange} /> 
+         : (this.state.route === "signin" ?
+         <SignIn onBtnSubmit={this.onRouteChange} /> 
+         : <Register onBtnSubmit={this.onRouteChange} />)
           }
       </div>
     );
